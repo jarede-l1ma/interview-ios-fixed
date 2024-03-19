@@ -58,27 +58,10 @@ final class ContactCell: UITableViewCell {
         
         guard let imageURL = URL(string: contact.photoURL) else { return }
         
-        if let cachedImage = ImageCache.shared.image(for: imageURL) {
-            contactImage.image = cachedImage
-        } else {
-            imageLoadingTask = URLSession.shared.dataTask(with: imageURL) { [weak self] (data, response, error) in
-                if let error = error {
-                    print("Error loading image: \(error.localizedDescription)")
-                    return
-                }
-                
-                guard let data = data, let downloadedImage = UIImage(data: data) else {
-                    print("Error converting data to image")
-                    return
-                }
-                
-                ImageCache.shared.cache(image: downloadedImage, for: imageURL)
-                
-                DispatchQueue.main.async {
-                    self?.contactImage.image = downloadedImage
-                }
+        ImageHelper.shared.loadImage(from: imageURL) { [weak self] image in
+            DispatchQueue.main.async {
+                self?.contactImage.image = image
             }
-            imageLoadingTask?.resume()
         }
     }
 }
