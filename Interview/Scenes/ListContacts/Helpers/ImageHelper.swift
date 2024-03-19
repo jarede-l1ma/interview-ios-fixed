@@ -24,7 +24,7 @@ final class ImageHelper {
         if let cachedImage = image(for: url) {
             completion(cachedImage)
         } else {
-            let task = URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
+            let task = URLSession.shared.dataTask(with: url) { [weak self] (data, _, error) in
                 if let error = error {
                     print("Error loading image: \(error.localizedDescription)")
                     completion(nil)
