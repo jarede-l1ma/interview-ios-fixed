@@ -1,26 +1,24 @@
 import Foundation
 
-class ListContactsViewModel {
-    private let service = ListContactService()
+final class ListContactsViewModel {
+    private let service: ContactServiceProvider
     
-    private var completion: (([Contact]?, Error?) -> Void)?
+    init(service: ContactServiceProvider = ListContactService()) {
+        self.service = service
+    }
     
-    init() { }
-    
-    func loadContacts(_ completion: @escaping ([Contact]?, Error?) -> Void) {
-        self.completion = completion
-        service.fetchContacts { contacts, err in
-            self.handle(contacts, err)
+    func loadContacts(completion: @escaping (Result<[Contact], Error>) -> Void) {
+        service.fetchContacts { result in
+            switch result {
+            case .success(let contacts):
+                completion(.success(contacts))
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
     }
     
-    private func handle(_ contacts: [Contact]?, _ error: Error?) {
-        if let e = error {
-            completion?(nil, e)
-        }
-        
-        if let contacts = contacts {
-            completion?(contacts, nil)
-        }
+    static func isLegacy(contactID: Int) -> Bool {
+        return UserIdsLegacy.isLegacy(id: contactID)
     }
 }

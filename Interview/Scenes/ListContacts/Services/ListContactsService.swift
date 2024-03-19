@@ -1,26 +1,39 @@
 import Foundation
 
-private let apiURL = "https://run.mocky.io/v3/5857d265-e837-4f52-85aa-a75031e8384a"
-
-class ListContactService {
-    func fetchContacts(completion: @escaping ([Contact]?, Error?) -> Void) {
-        guard let api = URL(string: apiURL) else {
+final class ListContactService: ContactServiceProvider {
+    func fetchContacts(completion: @escaping (Result<[Contact], Error>) -> Void) {
+        guard let api = URL(string: APIConstants.apiURL) else {
+            completion(.failure(NSError(domain: "InvalidURL",
+                                        code: 0)))
             return
         }
         
         let session = URLSession.shared
-        let task = session.dataTask(with: api) { (data, response, error) in
+        let task = session.dataTask(with: api) { [weak self] (data, response, error) in
+            guard let self else { return }
+            
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard response?.isHTTPStatusCodeValid() ?? false else {
+                completion(.failure(NSError(domain: "HTTPError", code: 0)))
+                return
+            }
+            
             guard let jsonData = data else {
+                completion(.failure(NSError(domain: "InvalidData", code: 0)))
                 return
             }
             
             do {
                 let decoder = JSONDecoder()
                 let decoded = try decoder.decode([Contact].self, from: jsonData)
+                completion(.success(decoded))
                 
-                completion(decoded, nil)
-            } catch let error {
-                completion(nil, error)
+            } catch {
+                completion(.failure(error))
             }
         }
         
