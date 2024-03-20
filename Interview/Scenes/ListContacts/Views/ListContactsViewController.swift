@@ -2,7 +2,7 @@ import UIKit
 
 final class ListContactsViewController: UIViewController {
     lazy var activity: UIActivityIndicatorView = {
-        let activity = UIActivityIndicatorView()
+        let activity = UIActivityIndicatorView(style: .large)
         activity.hidesWhenStopped = true
         activity.startAnimating()
         return activity

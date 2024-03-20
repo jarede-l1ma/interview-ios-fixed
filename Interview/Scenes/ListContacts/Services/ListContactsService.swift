@@ -10,7 +10,7 @@ final class ListContactService: ContactServiceProvider {
         
         let session = URLSession.shared
         let task = session.dataTask(with: api) { [weak self] (data, response, error) in
-            guard let self else { return }
+            guard self != nil else { return }
             
             if let error = error {
                 completion(.failure(error))
