@@ -1,8 +1,12 @@
 import UIKit
 
 final class ListContactsViewController: UIViewController {
+    
+    var viewModel: ListContactsViewModel!
+    private var contacts = [Contact]()
+    
     lazy var activity: UIActivityIndicatorView = {
-        let activity = UIActivityIndicatorView()
+        let activity = UIActivityIndicatorView(style: .large)
         activity.hidesWhenStopped = true
         activity.startAnimating()
         return activity
@@ -20,9 +24,6 @@ final class ListContactsViewController: UIViewController {
         tableView.allowsMultipleSelection = false
         return tableView
     }()
-    
-    var viewModel: ListContactsViewModel!
-    private var contacts = [Contact]()
     
     override func viewDidLoad() {
         super.viewDidLoad()

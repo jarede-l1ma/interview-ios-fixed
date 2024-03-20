@@ -19,6 +19,13 @@ final class ContactCell: UITableViewCell {
         return label
     }()
     
+    lazy var activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .medium)
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
@@ -33,12 +40,13 @@ final class ContactCell: UITableViewCell {
         super.prepareForReuse()
         imageLoadingTask?.cancel()
         fullnameLabel.text = ""
-        contactImage.image = UIImage(systemName: "person")
+        contactImage.image = nil
     }
     
     func configureViews() {
         contentView.addSubview(contactImage)
         contentView.addSubview(fullnameLabel)
+        contentView.addSubview(activityIndicator)
         
         NSLayoutConstraint.activate([
             contactImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
@@ -49,17 +57,25 @@ final class ContactCell: UITableViewCell {
             fullnameLabel.leadingAnchor.constraint(equalTo: contactImage.trailingAnchor, constant: 16),
             fullnameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
             fullnameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            fullnameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
+            fullnameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: contactImage.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: contactImage.centerYAnchor)
         ])
     }
     
     func configure(with contact: Contact) {
         fullnameLabel.text = contact.name
+        activityIndicator.startAnimating()
         
-        guard let imageURL = URL(string: contact.photoURL) else { return }
+        guard let imageURL = URL(string: contact.photoURL) else {
+            activityIndicator.stopAnimating()
+            return
+        }
         
         ImageHelper.shared.loadImage(from: imageURL) { [weak self] image in
             DispatchQueue.main.async {
+                self?.activityIndicator.stopAnimating()
                 self?.contactImage.image = image
             }
         }
