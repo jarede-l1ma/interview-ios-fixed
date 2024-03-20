@@ -22,7 +22,16 @@ class ListContactServiceTests: XCTestCase {
             switch result {
             case .success(let contacts):
                 XCTAssertFalse(contacts.isEmpty, "Contacts should not be empty")
+                
+                for contact in contacts {
+                    XCTAssertNotNil(contact.name, "Contact name should not be nil")
+                    XCTAssertFalse(contact.name.isEmpty, "Contact name should not be empty")
+                    XCTAssertNotNil(contact.photoURL, "Contact photoURL should not be nil")
+                    XCTAssertFalse(contact.photoURL.isEmpty, "Contact photoURL should not be empty")
+                }
+                
                 expectation.fulfill()
+                
             case .failure(let error):
                 XCTFail("Failed to fetch contacts with error: \(error.localizedDescription)")
             }

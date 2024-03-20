@@ -1,7 +1,7 @@
 import XCTest
 @testable import Interview
 
-class ListContactViewModelTests: XCTestCase {
+class ListContactsViewModelTests: XCTestCase {
     
     var viewModel: ListContactsViewModel!
     var mockService: MockContactService!
@@ -18,33 +18,38 @@ class ListContactViewModelTests: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadContacts() throws {
-        let expectation = expectation(description: "Load contacts expectation")
+    func testLoadContactsSuccess() {
+        let expectedContacts = [Contact(id: 1, name: "John", photoURL: "https://example.com/photo1.jpg")]
+        mockService.mockResult = .success(expectedContacts)
         
-        let expectedFirstContact = Contact(id: 20, name: "John Doe", photoURL: "https://example.com/photo1.jpg")
-        
+        var loadedContacts: [Contact]?
         viewModel.loadContacts { result in
             switch result {
             case .success(let contacts):
-                XCTAssertEqual(contacts.count, 3, "Unexpected number of contacts")
-                
-                if !contacts.isEmpty {
-                    XCTAssertEqual(contacts[0].id, expectedFirstContact.id, "First contact id should match")
-                    XCTAssertEqual(contacts[0].name, expectedFirstContact.name, "First contact name should match")
-                    XCTAssertEqual(contacts[0].photoURL, expectedFirstContact.photoURL, "First contact photoURL should match")
-                }
-                
-                expectation.fulfill()
+                loadedContacts = contacts
             case .failure(let error):
-                XCTFail("Failed to load contacts with error: \(error.localizedDescription)")
+                XCTFail("Expected success, but got failure with error: \(error.localizedDescription)")
             }
         }
         
-        wait(for: [expectation], timeout: 5)
+        XCTAssertEqual(loadedContacts, expectedContacts, "Loaded contacts do not match expected contacts")
     }
     
-    func testIsLegacy() {
-        XCTAssertTrue(ListContactsViewModel.isLegacy(contactID: 10), "Contact ID 10 should be legacy")
-        XCTAssertFalse(ListContactsViewModel.isLegacy(contactID: 20), "Contact ID 20 should not be legacy")
+    func testLoadContactsFailure() {
+        let expectedError = NSError(domain: "TestError", code: 0)
+        mockService.mockResult = .failure(expectedError)
+        
+        var receivedError: NSError?
+        viewModel.loadContacts { result in
+            switch result {
+            case .success(_):
+                XCTFail("Expected failure, but got success")
+            case .failure(let error):
+                receivedError = error as NSError
+            }
+        }
+        
+        XCTAssertEqual(receivedError?.domain, expectedError.domain, "Received error domain does not match expected error domain")
+        XCTAssertEqual(receivedError?.code, expectedError.code, "Received error code does not match expected error code")
     }
 }

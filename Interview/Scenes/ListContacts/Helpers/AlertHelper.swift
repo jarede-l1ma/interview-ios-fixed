@@ -1,11 +1,3 @@
-//
-//  AlertHelper.swift
-//  Interview
-//
-//  Created by Jarede Lima on 19/03/24.
-//  Copyright © 2024 PicPay. All rights reserved.
-//
-
 import UIKit
 
 final class AlertHelper {

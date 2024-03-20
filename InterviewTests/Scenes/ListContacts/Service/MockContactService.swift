@@ -1,25 +1,44 @@
-//
-//  MockContactService.swift
-//  InterviewTests
-//
-//  Created by Jarede Lima on 19/03/24.
-//  Copyright © 2024 PicPay. All rights reserved.
-//
-
-import XCTest
+import Foundation
 @testable import Interview
 
 class MockContactService: ContactServiceProvider {
     
-    func fetchContacts(completion: @escaping (Result<[Contact], Error>) -> Void) {
-        
-        let contacts = [Contact(id: 20, name: "John Doe", photoURL: "https://example.com/photo1.jpg"),
-                        Contact(id: 2, name: "Jane Smith", photoURL: "https://example.com/photo2.jpg"),
-                        Contact(id: 11, name: "Alice Johnson", photoURL: "https://example.com/photo3.jpg")]
-        completion(.success(contacts))
+    enum MockResult {
+        case success([Contact])
+        case failure(Error)
     }
     
-    func isHTTPStatusCodeValid(_ response: URLResponse?) -> Bool {
-        return true
+    var mockResult: MockResult?
+    
+    var delay: TimeInterval = 0
+    
+    var numberOfCallsToSimulate: Int = 1
+    private var simulatedCallCount: Int = 0
+    
+    func fetchContacts(completion: @escaping (Result<[Contact], Error>) -> Void) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + delay) { [weak self] in
+            guard let self = self else { return }
+            self.simulatedCallCount += 1
+            
+            if self.simulatedCallCount > self.numberOfCallsToSimulate {
+                completion(.failure(MockError.mockError))
+                return
+            }
+            
+            if let mockResult = self.mockResult {
+                switch mockResult {
+                case .success(let contacts):
+                    completion(.success(contacts))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            } else {
+                completion(.failure(MockError.mockError))
+            }
+        }
     }
+}
+
+enum MockError: Error {
+    case mockError
 }
